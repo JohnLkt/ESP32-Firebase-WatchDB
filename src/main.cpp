@@ -1,21 +1,16 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <Firebase.h>
+#include <credentials.h>
+
+#define RELAY_1 22
+#define RELAY_2 23
 
 // Provide the token generation process info.
 #include <addons/TokenHelper.h>
 
 // Provide the RTDB payload printing info and other helper functions.
 #include <addons/RTDBHelper.h>
-
-#define WIFI_SSID ""
-#define WIFI_PASSWORD ""
-
-#define API_KEY ""
-#define DATABASE_URL ""
-
-#define USER_EMAIL ""
-#define USER_PASSWORD ""
 
 FirebaseData stream;
 FirebaseData fbdo;
@@ -37,8 +32,10 @@ void streamCallback(StreamData data) {
 
   if (data.boolData() == true) {
     digitalWrite(BUILTIN_LED, HIGH);
+    digitalWrite(RELAY_1, LOW);
   } else {
     digitalWrite (BUILTIN_LED, LOW);
+    digitalWrite(RELAY_1, HIGH);
   }
   Serial.printf("Received stream payload size: %d (Max. %d)\n\n", data.payloadLength(), data.maxPayloadLength());
   interrupts();
@@ -56,11 +53,16 @@ void setup() {
   Serial.begin(115200);
 
   pinMode(BUILTIN_LED, OUTPUT);
+  pinMode(RELAY_1, OUTPUT);
+  pinMode(RELAY_2, OUTPUT);
+
+  // default high = open circuit
+  digitalWrite(RELAY_1, HIGH);
+  digitalWrite(RELAY_2, HIGH);
 
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wi-Fi");
-  while (WiFi.status() != WL_CONNECTED)
-  {
+  while (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
     delay(300);
   }
@@ -102,6 +104,5 @@ void loop() {
     sendDataPrevMillis = millis();
     FirebaseJson json;
   }
-
 }
 
